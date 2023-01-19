@@ -19,126 +19,145 @@
       height: 100vh; 
     }
     #images-container{
-    display: flex;
-    justify-content: space-between;
+      display: flex;
+      justify-content: center;
     }
     #original_image {
       max-width: 50%;
-    object-fit: contain;
-      display: none;
-    }
-    #image {
-      
       object-fit: contain;
       display: none;
     }
-    #button {
+    #image {
+      object-fit: contain;
       display: none;
+    }
+    img{
+      width: 500px;
+      height: 500px;
+      border: 1px solid black;
     }
     #button2{
       display: none;
     }
   </style>
 
-</head>
-<body>
-  <div id="drop-zone">
-    <p id="drop-text">Drag and drop an image here or <input type="file" id="file-input" onchange="load_file(event)"></p>
-  </div>
-  <div id="images-container">
-    <img id="original_image" src="" alt="Original Image">
-    <img id="image" src="" alt="Transparent Image">
-  </div>
-  <div id="buttons-container">
-    <button id="button" onclick="make_white_pixels_transparent()">Make White Pixels Transparent</button>
-    <button id="button2" onclick="prompt_new_image()">New image</button>
-  </div>
+  </head>
+  <body>
+    <div id="drop-zone">
+      <p id="drop-text">Drag and drop an image here or <input type="file" id="file-input" onchange="load_file(event)"></p>
+    </div>
+    <div id="images-container">
+      <img id="original_image" src="" alt="Original Image">
+      <img id="image" src="" alt="Transparent Image">
+    </div>
+    <div id="buttons-container">
+      <button id="button2" onclick="prompt_new_image()">New image</button>
+    </div>
 
 
 
-  <script>
-    var drop_text = document.getElementById("drop-text");
-    var file_input = document.getElementById("file-input");
-    var image = document.getElementById("image");
-    var button = document.getElementById("button");
-    var drop_zone = document.getElementById("drop-zone");
-    
-    drop_zone.addEventListener("dragover", change_drop_box);
-    drop_zone.addEventListener("dragleave", reset_drop_box);
-    drop_zone.addEventListener("drop", handle_drop);
-    ////////////////////////////////////////////////////////////
-    function change_drop_box(event) {
-      event.preventDefault();
-      drop_zone.style.background = "lightgreen";
-      drop_text.innerHTML = "Drop Image now";
-    }
+    <script>
+      var drop_text = document.getElementById("drop-text");
+      var file_input = document.getElementById("file-input");
+      var image = document.getElementById("image");
+      var drop_zone = document.getElementById("drop-zone");
+      
+      drop_zone.addEventListener("dragover", change_drop_box);
+      drop_zone.addEventListener("dragleave", reset_drop_box);
+      drop_zone.addEventListener("drop", handle_drop);
+      ////////////////////////////////////////////////////////////
+      function change_drop_box(event) {
+        event.preventDefault();
+        drop_zone.style.background = "lightgreen";
+        drop_text.innerHTML = "Drop Image now";
+      }
 
-    function reset_drop_box(event) {
-      event.preventDefault();
-      drop_zone.style.background = "white";
-      drop_text.innerHTML = "Drag and drop an image here or <input type='file' id='file-input' onchange='load_file(event)'>";
-    }
+      function reset_drop_box(event) {
+        event.preventDefault();
+        drop_zone.style.background = "white";
+        drop_text.innerHTML = "Drag and drop an image here or <input type='file' id='file-input' onchange='load_file(event)'>";
+      }
+      
+      ////////////////////////////////////////////////////////////
+      function prompt_new_image() {
+        ile_input.value = ""; 
+        file_input.click(); 
+        file_input.onchange = function() {
+          var file = file_input.files[0];
+          var reader = new FileReader();
+          reader.onload = handle_file_load;
+          reader.readAsDataURL(file);
+        }
+      }
 
-    ////////////////////////////////////////////////////////////
-    function prompt_new_image() {
-    document.getElementById("file-input").click();
-    }
-
-    ////////////////////////////////////////////////////////////
-    // Handle file selection
-    function load_file(event) {
-      var file = event.target.files[0];
-      var reader = new FileReader();
-      reader.onload = function (event) {
+      
+      ////////////////////////////////////////////////////////////
+      // Handle file selection
+      function handle_file_load(event) {
         image.src = event.target.result;
+        image.style.width = "50%";
+        make_white_pixels_transparent();
+        image.style.objectFit = "contain";
         image.style.display = "block";
-        button.style.display = "block";
+        button2.style.display = "block";
+        drop_zone.style.display = "none";
+      } 
+
+      function load_file(event) {
+        event.preventDefault();
+        var file = event.target.files[0];
+        var reader = new FileReader();
+        reader.onload = handle_file_load;
+        reader.readAsDataURL(file);
+      }
+
+      ////////////////////////////////////////////////////////////
+      function handle_file_drop(event) {
+        image.src = event.target.result;
+        make_white_pixels_transparent();
+        image.style.display = "block";
         button2.style.display = "block";
         drop_zone.style.display = "none";
       }
-      reader.readAsDataURL(file);
-    }
-    
-    ////////////////////////////////////////////////////////////
-    function handle_file_drop(event) {
-      image.src = event.target.result;
-      image.style.display = "block";
-      button2.style.display = "block";
-      button.style.display = "block";
-    drop_zone.style.display = "none";
-    }
 
-    ////////////////////////////////////////////////////////////
-    function handle_drop(event) {
-    event.preventDefault();
-    var file = event.dataTransfer.files[0];
-    var reader = new FileReader();
-    reader.onload = handle_file_drop;
-    reader.readAsDataURL(file);
-    }
-
-    ////////////////////////////////////////////////////////////
-    // Make white pixels transparent
-    function make_white_pixels_transparent() {
-    var original = document.getElementById("image").src;
-    document.getElementById("original_image").src = original;
-
-    var canvas = document.createElement("canvas");
-    canvas.width = document.getElementById("image").width;
-    canvas.height = document.getElementById("image").height;
-    var ctx = canvas.getContext("2d");
-    ctx.drawImage(document.getElementById("image"), 0, 0);
-    var imgData = ctx.getImageData(0, 0, document.getElementById("image").width, document.getElementById("image").height);
-    var data = imgData.data;
-    for (var i = 0; i < data.length; i += 4) {
-      if (data[i] === 255 && data[i + 1] === 255 && data[i + 2] === 255) {
-        data[i + 3] = 0;
+      ////////////////////////////////////////////////////////////
+      function handle_drop(event) {
+        event.preventDefault();
+        var file = event.dataTransfer.files[0];
+        var reader = new FileReader();
+        reader.onload = function(fileDropEvent) {
+          image.src = fileDropEvent.target.result;
+          make_white_pixels_transparent();
+          image.style.display = "block";
+          button2.style.display = "block";
+          drop_zone.style.display = "none";
+        }
+        reader.readAsDataURL(file);
       }
+
+
+      ////////////////////////////////////////////////////////////
+      // Make white pixels transparent
+      function make_white_pixels_transparent() {
+      var original = document.getElementById("image").src;
+      document.getElementById("original_image").src = original;
+
+      var canvas = document.createElement("canvas");
+      canvas.width = document.getElementById("image").width;
+      canvas.height = document.getElementById("image").height;
+      var ctx = canvas.getContext("2d");
+      ctx.drawImage(document.getElementById("image"), 0, 0);
+      var imgData = ctx.getImageData(0, 0, document.getElementById("image").width, document.getElementById("image").height);
+      var data = imgData.data;
+      for (var i = 0; i < data.length; i += 4) {
+        if (data[i] === 255 && data[i + 1] === 255 && data[i + 2] === 255) {
+          data[i + 3] = 0;
+        }
+      }
+      ctx.putImageData(imgData, 0, 0);
+      document.getElementById("image").src = canvas.toDataURL();
+      document.getElementById("original_image").style.display = "block";
     }
-    ctx.putImageData(imgData, 0, 0);
-    document.getElementById("image").src = canvas.toDataURL();
-    document.getElementById("original_image").style.display = "block";
-  }
 
   </script>
 </body>
